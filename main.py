@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session, select, SQLModel
+from sqlalchemy import text
 from datetime import datetime
 import secrets
 
@@ -13,6 +14,9 @@ from schemas import (
 )
 
 FRESH_TIMEOUT_SECONDS = 15
+
+# Одноразовые события от устройств (device_id -> список событий)
+device_events: dict[int, list[str]] = {}
 
 app = FastAPI(title="Greenhouse API")
 
@@ -27,6 +31,19 @@ app.add_middleware(
 @app.on_event("startup")
 def on_startup():
     SQLModel.metadata.create_all(engine)
+
+    # Идемпотентная миграция: новые колонки для существующих таблиц
+    with engine.begin() as conn:
+        conn.execute(text(
+            "ALTER TABLE telemetry ADD COLUMN IF NOT EXISTS pump BOOLEAN NOT NULL DEFAULT FALSE"
+        ))
+        conn.execute(text(
+            "ALTER TABLE telemetry ADD COLUMN IF NOT EXISTS light BOOLEAN NOT NULL DEFAULT FALSE"
+        ))
+        conn.execute(text(
+            "ALTER TABLE telemetry ADD COLUMN IF NOT EXISTS roof BOOLEAN NOT NULL DEFAULT FALSE"
+        ))
+
     print("Database initialized")
 
 
@@ -80,8 +97,19 @@ def ingest_telemetry(
         soil2_moisture=data.soil2_moisture,
         temperature=data.temperature,
         humidity=data.humidity,
+        temperature2=data.temperature2,
+        humidity2=data.humidity2,
+        light1=data.light1,
+        light2=data.light2,
+        pump=bool(data.pump),
+        light=bool(data.light),
+        roof=bool(data.roof),
     )
     session.add(t)
+
+    if data.ev:
+        device_events.setdefault(device.id, []).extend(data.ev)
+
     device.last_seen = datetime.utcnow()
     session.add(device)
     session.commit()
@@ -110,6 +138,14 @@ def get_latest(device_id: int, session: Session = Depends(get_session)):
         "soil2_moisture": t.soil2_moisture,
         "temperature": t.temperature,
         "humidity": t.humidity,
+        "temperature2": t.temperature2,
+        "humidity2": t.humidity2,
+        "light1": t.light1,
+        "light2": t.light2,
+        "pump": t.pump,
+        "light": t.light,
+        "roof": t.roof,
+        "ev": device_events.pop(device_id, []),
         "timestamp": t.timestamp,
         "is_fresh": age < FRESH_TIMEOUT_SECONDS,
         "age_seconds": age,

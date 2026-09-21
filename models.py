@@ -34,4 +34,9 @@ class Telemetry(SQLModel, table=True):
     light1: Optional[int] = None
     light2: Optional[int] = None
 
+    # Состояние исполнительных механизмов
+    pump: bool = False
+    light: bool = False
+    roof: bool = False
+
     timestamp: datetime = Field(default_factory=datetime.utcnow, index=True)

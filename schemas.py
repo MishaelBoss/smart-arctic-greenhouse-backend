@@ -25,6 +25,14 @@ class TelemetryIn(BaseModel):
     soil2_moisture: float
     temperature: Optional[float] = None
     humidity: Optional[float] = None
+    temperature2: Optional[float] = None
+    humidity2: Optional[float] = None
+    light1: Optional[int] = None
+    light2: Optional[int] = None
+    pump: Optional[bool] = None
+    light: Optional[bool] = None
+    roof: Optional[bool] = None
+    ev: Optional[list[str]] = None
 
 
 class TelemetryOut(BaseModel):
@@ -34,6 +42,13 @@ class TelemetryOut(BaseModel):
     soil2_moisture: float
     temperature: Optional[float]
     humidity: Optional[float]
+    temperature2: Optional[float] = None
+    humidity2: Optional[float] = None
+    light1: Optional[int] = None
+    light2: Optional[int] = None
+    pump: Optional[bool] = None
+    light: Optional[bool] = None
+    roof: Optional[bool] = None
     timestamp: datetime
     is_fresh: bool = True 
     age_seconds: float = 0.0 

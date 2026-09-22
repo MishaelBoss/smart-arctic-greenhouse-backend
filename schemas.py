@@ -5,7 +5,12 @@ from typing import Optional
 
 class DeviceCreate(BaseModel):
     name: str
-    connection_type: str = "wifi" 
+    connection_type: str = "wifi"
+
+
+class DeviceUpdate(BaseModel):
+    name: Optional[str] = None
+    connection_type: Optional[str] = None
 
 
 class DeviceOut(BaseModel):

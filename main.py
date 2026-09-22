@@ -8,7 +8,7 @@ import secrets
 from database import engine, get_session
 from models import Device, Telemetry
 from schemas import (
-    DeviceCreate, DeviceOut,
+    DeviceCreate, DeviceUpdate, DeviceOut,
     TelemetryIn, TelemetryOut,
     CommandIn
 )
@@ -61,6 +61,23 @@ def create_device(payload: DeviceCreate, session: Session = Depends(get_session)
 @app.get("/api/devices", response_model=list[DeviceOut])
 def list_devices(session: Session = Depends(get_session)):
     return session.exec(select(Device)).all()
+
+
+@app.patch("/api/devices/{device_id}", response_model=DeviceOut)
+def update_device(device_id: int,
+                  payload: DeviceUpdate,
+                  session: Session = Depends(get_session)):
+    device = session.get(Device, device_id)
+    if not device:
+        raise HTTPException(404, "Device not found")
+    if payload.name is not None:
+        device.name = payload.name
+    if payload.connection_type is not None:
+        device.connection_type = payload.connection_type
+    session.add(device)
+    session.commit()
+    session.refresh(device)
+    return device
 
 
 @app.delete("/api/devices/{device_id}")

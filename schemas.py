@@ -32,6 +32,8 @@ class TelemetryIn(BaseModel):
     humidity: Optional[float] = None
     temperature2: Optional[float] = None
     humidity2: Optional[float] = None
+    temperature_avg: Optional[float] = None
+    humidity_avg: Optional[float] = None
     light1: Optional[int] = None
     light2: Optional[int] = None
     pump: Optional[bool] = None
@@ -49,6 +51,8 @@ class TelemetryOut(BaseModel):
     humidity: Optional[float]
     temperature2: Optional[float] = None
     humidity2: Optional[float] = None
+    temperature_avg: Optional[float] = None
+    humidity_avg: Optional[float] = None
     light1: Optional[int] = None
     light2: Optional[int] = None
     pump: Optional[bool] = None

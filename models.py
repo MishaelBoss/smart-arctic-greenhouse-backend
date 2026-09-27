@@ -30,6 +30,10 @@ class Telemetry(SQLModel, table=True):
     temperature2: Optional[float] = None
     humidity2:    Optional[float] = None
 
+    # Средние значения по двум DHT22 (управление компонентами)
+    temperature_avg: Optional[float] = None
+    humidity_avg:    Optional[float] = None
+
     # Освещённость #1 и #2
     light1: Optional[int] = None
     light2: Optional[int] = None

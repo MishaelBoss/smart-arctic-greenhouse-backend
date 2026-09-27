@@ -43,6 +43,12 @@ def on_startup():
         conn.execute(text(
             "ALTER TABLE telemetry ADD COLUMN IF NOT EXISTS roof BOOLEAN NOT NULL DEFAULT FALSE"
         ))
+        conn.execute(text(
+            "ALTER TABLE telemetry ADD COLUMN IF NOT EXISTS temperature_avg DOUBLE PRECISION"
+        ))
+        conn.execute(text(
+            "ALTER TABLE telemetry ADD COLUMN IF NOT EXISTS humidity_avg DOUBLE PRECISION"
+        ))
 
     print("Database initialized")
 
@@ -116,6 +122,8 @@ def ingest_telemetry(
         humidity1=data.humidity,
         temperature2=data.temperature2,
         humidity2=data.humidity2,
+        temperature_avg=data.temperature_avg,
+        humidity_avg=data.humidity_avg,
         light1=data.light1,
         light2=data.light2,
         pump=bool(data.pump),
@@ -157,6 +165,8 @@ def get_latest(device_id: int, session: Session = Depends(get_session)):
         "humidity": t.humidity1,
         "temperature2": t.temperature2,
         "humidity2": t.humidity2,
+        "temperature_avg": t.temperature_avg,
+        "humidity_avg": t.humidity_avg,
         "light1": t.light1,
         "light2": t.light2,
         "pump": t.pump,
@@ -189,6 +199,8 @@ def get_history(device_id: int, limit: int = 100,
             "humidity": t.humidity1,
             "temperature2": t.temperature2,
             "humidity2": t.humidity2,
+            "temperature_avg": t.temperature_avg,
+            "humidity_avg": t.humidity_avg,
             "light1": t.light1,
             "light2": t.light2,
             "pump": t.pump,

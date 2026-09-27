@@ -108,12 +108,12 @@ def ingest_telemetry(
 
     t = Telemetry(
         device_id=device.id,
-        soil1_raw=data.soil1_raw,
-        soil1_moisture=data.soil1_moisture,
-        soil2_raw=data.soil2_raw,
-        soil2_moisture=data.soil2_moisture,
-        temperature=data.temperature,
-        humidity=data.humidity,
+        sensor1_raw=data.soil1_raw,
+        sensor1_moisture=data.soil1_moisture,
+        sensor2_raw=data.soil2_raw,
+        sensor2_moisture=data.soil2_moisture,
+        temperature1=data.temperature,
+        humidity1=data.humidity,
         temperature2=data.temperature2,
         humidity2=data.humidity2,
         light1=data.light1,
@@ -149,12 +149,12 @@ def get_latest(device_id: int, session: Session = Depends(get_session)):
 
     age = (datetime.utcnow() - t.timestamp).total_seconds()
     return {
-        "soil1_raw": t.soil1_raw,
-        "soil1_moisture": t.soil1_moisture,
-        "soil2_raw": t.soil2_raw,
-        "soil2_moisture": t.soil2_moisture,
-        "temperature": t.temperature,
-        "humidity": t.humidity,
+        "soil1_raw": t.sensor1_raw,
+        "soil1_moisture": t.sensor1_moisture,
+        "soil2_raw": t.sensor2_raw,
+        "soil2_moisture": t.sensor2_moisture,
+        "temperature": t.temperature1,
+        "humidity": t.humidity1,
         "temperature2": t.temperature2,
         "humidity2": t.humidity2,
         "light1": t.light1,
@@ -169,8 +169,7 @@ def get_latest(device_id: int, session: Session = Depends(get_session)):
     }
 
 
-@app.get("/api/devices/{device_id}/history",
-         response_model=list[TelemetryOut])
+@app.get("/api/devices/{device_id}/history")
 def get_history(device_id: int, limit: int = 100,
                 session: Session = Depends(get_session)):
     q = (
@@ -179,7 +178,26 @@ def get_history(device_id: int, limit: int = 100,
         .order_by(Telemetry.timestamp.desc())
         .limit(limit)
     )
-    return list(reversed(session.exec(q).all()))
+
+    def to_dict(t: Telemetry) -> dict:
+        return {
+            "soil1_raw": t.sensor1_raw,
+            "soil1_moisture": t.sensor1_moisture,
+            "soil2_raw": t.sensor2_raw,
+            "soil2_moisture": t.sensor2_moisture,
+            "temperature": t.temperature1,
+            "humidity": t.humidity1,
+            "temperature2": t.temperature2,
+            "humidity2": t.humidity2,
+            "light1": t.light1,
+            "light2": t.light2,
+            "pump": t.pump,
+            "light": t.light,
+            "roof": t.roof,
+            "timestamp": t.timestamp,
+        }
+
+    return [to_dict(t) for t in reversed(session.exec(q).all())]
 
 
 # ==================== ОЧЕРЕДЬ КОМАНД ====================
